@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Document Search</title>
+</head>
+<body>
+    <h1>PDF Document Search</h1>
+    <form>
+        <label for="bucketName">S3 Bucket Name:</label>
+        <input type="text" id="bucketName" name="bucketName" required>
+        <br>
+        <label for="prefix">Prefix (optional):</label>
+        <input type="text" id="prefix" name="prefix">
+        <br>
+        <label for="searchText">Search Text:</label>
+        <input type="text" id="searchText" name="searchText" required>
+        <br>
+        <button type="button" onclick="searchDocuments()">Search</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        function searchDocuments() {
+            const bucketName = document.getElementById('bucketName').value;
+            const prefix = document.getElementById('prefix').value;
+            const searchText = document.getElementById('searchText').value;
+
+            const apiUrl = 'https://your-api-gateway-url/search'; // Replace with your API Gateway URL
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ bucketName, prefix, searchText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '';
+
+                if (data.matchingDocuments.length > 0) {
+                    const ul = document.createElement('ul');
+                    data.matchingDocuments.forEach(document => {
+                        const li = document.createElement('li');
+                        li.textContent = `${document.key} (Signature: ${document.hasSignature})`;
+                        ul.appendChild(li);
+                    });
+                    resultDiv.appendChild(ul);
+                } else {
+                    resultDiv.textContent = 'No matching documents found.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
