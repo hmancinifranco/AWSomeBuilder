@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload File to S3</title>
+    <script>
+        async function getPresignedUrl() {
+            const objectName = document.getElementById('object-name').value;
+            const response = await fetch(`/generate-presigned-url?object_name=${objectName}`);
+            const data = await response.json();
+            return data.url;
+        }
+
+        async function uploadFile() {
+            const file = document.getElementById('file-input').files[0];
+            const presignedUrl = await getPresignedUrl();
+
+            await fetch(presignedUrl, {
+                method: 'PUT',
+                body: file
+            });
+
+            alert('File uploaded successfully!');
+        }
+    </script>
+</head>
+<body>
+    <h1>Upload File to S3</h1>
+    <input type="text" id="object-name" placeholder="Enter object name" required>
+    <input type="file" id="file-input" required>
+    <button onclick="uploadFile()">Upload</button>
+</body>
+</html>

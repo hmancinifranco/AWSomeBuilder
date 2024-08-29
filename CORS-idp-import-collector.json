@@ -1,0 +1,28 @@
+[
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "PUT",
+            "POST"
+        ],
+        "AllowedOrigins": [
+            "*"
+        ],
+        "MaxAgeSeconds": 3000
+    },
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "GET",
+            "DELETE"
+        ],
+        "AllowedOrigins": [
+            "http://www.cloudfronturl.com/UPLOAD"
+        ],
+        "MaxAgeSeconds":3000
+    }
+]
