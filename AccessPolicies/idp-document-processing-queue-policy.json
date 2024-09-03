@@ -1,0 +1,24 @@
+{
+    "Version": "2012-10-17",
+    "Id": "idp-document-processing-queue-policy",
+    "Statement": [
+      {
+        "Sid": "AllowLambdaToSendMessages",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "arn:aws:iam::533267341537:role/idp-document-notification-role"
+        },
+        "Action": "sqs:SendMessage",
+        "Resource": "arn:aws:sqs:<REGION>:533267341537:idp-document-processing-queue"
+      },
+      {
+        "Sid": "AllowLambdaToReceiveMessages",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "arn:aws:iam::533267341537:role/idp-document-processing-role"
+        },
+        "Action": "sqs:ReceiveMessage",
+        "Resource": "arn:aws:sqs:<REGION>:533267341537:idp-document-processing-queue"
+      }
+    ]
+  }
