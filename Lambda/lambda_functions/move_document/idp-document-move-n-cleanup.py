@@ -27,7 +27,7 @@ def lambda_handler(event, context):
 
         try:
             # Copy the object to the destination bucket with the classification as the prefix
-            destination_key = f"accounting_docs/{source_key}/{classification}"
+            destination_key = f"{source_key}/{classification}"
             copy_source = {
                 'Bucket': source_bucket,
                 'Key': source_key

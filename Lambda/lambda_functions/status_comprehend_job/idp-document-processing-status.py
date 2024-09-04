@@ -1,6 +1,7 @@
 import json
 import boto3
 import time
+import os
 from datetime import datetime
 
 # Initialize AWS clients
@@ -8,15 +9,15 @@ sqs_client = boto3.client('sqs')
 comprehend = boto3.client('comprehend')
 
 # Get environment variables
-QUEUE_URL = os.environ['DESTINATION_QUEUE_URL']
-DATA_ACCESS_ROLE_ARN = os.environ['DATA_ACCESS_ROLE_ARN']
+QUEUE_URL = os.environ['QUEUE_URL']
+#DATA_ACCESS_ROLE_ARN = os.environ['DATA_ACCESS_ROLE_ARN']
 
 def lambda_handler(event, context):
     # Get the message from the SNS topic
     sns_message = json.loads(event['Records'][0]['Sns']['Message'])
 
     # Extract the job name from the SNS message
-    job_name = sns_message['job_name']
+    job_name = sns_message['job_id']
 
     # Wait for the job to complete
     max_time = time.time() + 3 * 60 * 60  # 3 hours
@@ -24,6 +25,7 @@ def lambda_handler(event, context):
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         describe_job = comprehend.describe_document_classification_job(JobId=job_name)
+        status = describe_job["DocumentClassificationJobProperties"]["JobStatus"]
 
         print(f"{current_time} : Custom document classifier Job: {status}")
 

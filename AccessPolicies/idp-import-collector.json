@@ -2,26 +2,23 @@
     "Version": "2012-10-17",
     "Statement": [
         {
-			"Effect": "Allow",
-			"Principal": {
-				"AWS": "arn:aws:iam::533267341537:role/IDP-presigned-url-function-Role"
-			},
-			"Action": [
-				"s3:PutObject",
-				"s3:GetObject"
-			],
-			"Resource": "arn:aws:s3:::idp-import-collector/*"
-		},    
-        {
-
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::533267341537:role/idp-document-cleanup-role"
+                "AWS": "arn:aws:iam::533267341537:role/IDP-presigned-url-function-Role"
             },
             "Action": [
-                "s3:DeleteObject"
+                "s3:PutObject",
+                "s3:GetObject"
             ],
-            "Resource": "arn:aws:s3:::idp-import-collector/*"
+            "Resource": "arn:aws:s3:::idp-import-collector/landing/*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::533267341537:role/idp-document-notification-role"
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::idp-import-collector"
         },
         {
             "Effect": "Allow",
@@ -30,11 +27,25 @@
             },
             "Action": [
                 "s3:GetObject",
-                "s3:ListBucket",
                 "s3:PutObject"
             ],
-            "Resource": 
-            "arn:aws:s3:::idp-import-collector/*"
+            "Resource": "arn:aws:s3:::idp-import-collector/*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::533267341537:role/idp-document-processing-role"
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::idp-import-collector"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::533267341537:role/idp-document-cleanup-role"
+            },
+            "Action": "s3:DeleteObject",
+            "Resource": "arn:aws:s3:::idp-import-collector/*"
         }
     ]
 }
