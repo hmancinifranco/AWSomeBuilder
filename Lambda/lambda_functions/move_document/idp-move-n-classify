@@ -1,0 +1,87 @@
+import json
+import boto3
+import os
+
+# Initialize AWS clients
+sqs_client = boto3.client('sqs')
+dynamodb = boto3.resource('dynamodb')
+s3_client = boto3.client('s3')
+
+# Get environment variables
+QUEUE_URL = os.environ['QUEUE_URL']
+SOURCE_TABLE_NAME = os.environ['SOURCE_TABLE_NAME']
+DESTINATION_BUCKET = os.environ['DESTINATION_BUCKET']
+
+def lambda_handler(event, context):
+    # Get messages from SQS queue
+    messages = sqs_client.receive_message(
+        QueueUrl=QUEUE_URL,
+        MaxNumberOfMessages=10,
+        VisibilityTimeout=60,
+        WaitTimeSeconds=20
+    )
+
+    if 'Messages' in messages:
+        for message in messages['Messages']:
+            message_body = json.loads(message['Body'])
+
+            # Get information from the message
+            file_name = message_body['file_name']
+            classification = message_body['classification']
+
+            try:
+                # Get item from DynamoDB table
+                table = dynamodb.Table(SOURCE_TABLE_NAME)
+                response = table.get_item(
+                    Key={
+                        'bucket': 'idp-import-collector',
+                        'filename': file_name
+                    }
+                )
+
+                if 'Item' in response:
+                    item = response['Item']
+                    source_bucket = item['bucket']
+                    source_prefix = item['prefix']
+                    source_key = f"{source_prefix}/{file_name}"
+
+                    # Copy the file from the source bucket to the destination bucket
+                    destination_key = f"{source_prefix}/{classification}/{file_name}"
+                    s3_client.copy_object(
+                        Bucket=DESTINATION_BUCKET,
+                        Key=destination_key,
+                        CopySource={
+                            'Bucket': source_bucket,
+                            'Key': source_key
+                        }
+                    )
+                    print(f"File {source_key} copied to {DESTINATION_BUCKET}/{destination_key}")
+
+                    # Delete the item from DynamoDB table
+                    table.delete_item(
+                        Key={
+                            'bucket': 'idp-import-collector',
+                            'filename': file_name
+                        }
+                    )
+                    print(f"Item deleted from DynamoDB table for {file_name}")
+
+                # Delete the message from the SQS queue
+                sqs_client.delete_message(
+                    QueueUrl=QUEUE_URL,
+                    ReceiptHandle=message['ReceiptHandle']
+                )
+
+            except Exception as e:
+                print(f"Error: {e}")
+
+        return {
+            'statusCode': 200,
+            'body': 'Files copied successfully'
+        }
+
+    else:
+        return {
+            'statusCode': 200,
+            'body': 'No messages in the queue'
+        }
