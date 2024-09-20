@@ -2,6 +2,7 @@ import json
 import boto3
 import os
 from botocore.exceptions import ClientError
+import logging
 
 # Initialize AWS clients
 s3_client = boto3.client('s3')
@@ -12,19 +13,23 @@ BUCKET_NAME = os.environ['BUCKET_NAME']
 TABLE_NAME = os.environ['TABLE_NAME']
 GSI_NAME = os.environ['GSI_NAME']
 
+# Configure logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 def lambda_handler(event, context):
     # Get the bucket name from the event
     try:
         bucket_name = event['Records'][0]['s3']['bucket']['name']
     except (KeyError, IndexError):
-        print("Error: Invalid event structure")
+        logger.error("Invalid event structure")
         return {
             'statusCode': 400,
             'body': 'Invalid event structure'
         }
 
     if bucket_name != BUCKET_NAME:
-        print(f"Skipping bucket {bucket_name} as it is not the target bucket")
+        logger.info(f"Skipping bucket {bucket_name} as it is not the target bucket")
         return {
             'statusCode': 200,
             'body': 'Not the target bucket'
@@ -37,45 +42,56 @@ def lambda_handler(event, context):
             key = record['s3']['object']['key']
             event_name = record['eventName']
 
-            if key.startswith('classified/') and event_name in ['ObjectCreated:Put', 'ObjectRemoved:Delete']:
-                key_parts = key.split('/')[1:]  # Remove the 'classified/' prefix
+            # Check if the key has a file extension
+            if '.' in key.split('/')[-1]:
+                if key.startswith('classified/') and event_name in ['ObjectCreated:Put', 'ObjectRemoved:Delete', 'ObjectCreated:Copy']:
+                    key_parts = key.split('/')[1:]  # Remove the 'classified/' prefix
 
-                if len(key_parts) == 4:
-                    customer, year_month, doctype, filename = key_parts
-                    s3_path = f"s3://{bucket_name}/{key}"
+                    if len(key_parts) == 4:
+                        customer, year_month, doctype, filename = key_parts
+                        s3_path = f"s3://{bucket_name}/{key}"
 
-                    if event_name == 'ObjectCreated:Put':
-                        # Write item to DynamoDB table
-                        table.put_item(
-                            Item={
-                                'customer': customer,
-                                'year-month': year_month,
-                                'filename': filename,
-                                'doctype': doctype,
-                                's3path': s3_path
-                            }
-                        )
-                        print(f"Item written to DynamoDB table for {filename}")
+                        if event_name == 'ObjectCreated:Put' or event_name == 'ObjectCreated:Copy':
+                            # Log the S3 event message
+                            logger.info(f"Received {event_name} event for {s3_path}")
 
-                    elif event_name == 'ObjectRemoved:Delete':
-                        # Delete item from DynamoDB table using the Global Secondary Index
-                        response = table.query(
-                            IndexName=GSI_NAME,
-                            KeyConditionExpression='customer = :customer AND filename = :filename',
-                            ExpressionAttributeValues={
-                                ':customer': customer,
-                                ':filename': filename
-                            }
-                        )
-                        
-                        for item in response.get('Items', []):
-                            table.delete_item(
-                                Key={
-                                    'customer': item['customer'],
-                                    'year-month': item['year-month']
+                            # Write item to DynamoDB table
+                            table.put_item(
+                                Item={
+                                    'customer': customer,
+                                    'year-month': year_month,
+                                    'filename': filename,
+                                    'doctype': doctype,
+                                    's3path': s3_path
                                 }
                             )
-                        print(f"Item deleted from DynamoDB table for customer {customer} and filename {filename}")
+                            logger.info(f"Item written to DynamoDB table for {filename}")
+
+                        elif event_name == 'ObjectRemoved:Delete':
+                            # Delete item from DynamoDB table using the Global Secondary Index
+                            response = table.query(
+                                IndexName=GSI_NAME,
+                                KeyConditionExpression='customer = :customer AND filename = :filename',
+                                ExpressionAttributeValues={
+                                    ':customer': customer,
+                                    ':filename': filename
+                                }
+                            )
+                            
+                            for item in response.get('Items', []):
+                                table.delete_item(
+                                    Key={
+                                        'customer': item['customer'],
+                                        'year-month': item['year-month']
+                                    }
+                                )
+                            logger.info(f"Item deleted from DynamoDB table for customer {customer} and filename {filename}")
+                    else:
+                        logger.info(f"Skipping key {key} as it does not match the expected pattern")
+                else:
+                    logger.info(f"Skipping key {key} as it does not start with 'classified/' or the event is not ObjectCreated:Put, ObjectRemoved:Delete, or ObjectCreated:Copy")
+            else:
+                logger.info(f"Skipping key {key} as it does not have a file extension")
 
         return {
             'statusCode': 200,
@@ -83,13 +99,13 @@ def lambda_handler(event, context):
         }
 
     except ClientError as e:
-        print(f"AWS ClientError: {e}")
+        logger.error(f"AWS ClientError: {e}")
         return {
             'statusCode': 500,
             'body': 'Error processing files: AWS ClientError'
         }
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logger.error(f"Unexpected error: {e}")
         return {
             'statusCode': 500,
             'body': 'Error processing files: Unexpected error'
