@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     try:
         presigned_url = s3.generate_presigned_url('put_object', 
                                                   Params={'Bucket': bucket_name, 'Key': object_name}, 
-                                                  ExpiresIn=300,
+                                                  ExpiresIn=3600,
                                                   HttpMethod='PUT')
     except Exception as e:
         # Manejo de errores con más detalles

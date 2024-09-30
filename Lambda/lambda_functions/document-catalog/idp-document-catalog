@@ -1,112 +1,80 @@
-import json
 import boto3
 import os
-from botocore.exceptions import ClientError
 import logging
 
-# Initialize AWS clients
-s3_client = boto3.client('s3')
-dynamodb = boto3.resource('dynamodb')
-
-# Get environment variables
-BUCKET_NAME = os.environ['BUCKET_NAME']
-TABLE_NAME = os.environ['TABLE_NAME']
-GSI_NAME = os.environ['GSI_NAME']
-
-# Configure logging
+# Set up logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# Initialize AWS clients
+dynamodb = boto3.resource('dynamodb')
+
+# Get environment variables
+TABLE_NAME = os.environ['DYNAMODB_TABLE_NAME']
+
 def lambda_handler(event, context):
-    # Get the bucket name from the event
-    try:
-        bucket_name = event['Records'][0]['s3']['bucket']['name']
-    except (KeyError, IndexError):
-        logger.error("Invalid event structure")
-        return {
-            'statusCode': 400,
-            'body': 'Invalid event structure'
-        }
-
-    if bucket_name != BUCKET_NAME:
-        logger.info(f"Skipping bucket {bucket_name} as it is not the target bucket")
-        return {
-            'statusCode': 200,
-            'body': 'Not the target bucket'
-        }
-
-    try:
-        table = dynamodb.Table(TABLE_NAME)
+    logger.info(f"Received event: {event}")
+    
+    # Get the DynamoDB table
+    table = dynamodb.Table(TABLE_NAME)
+    
+    for record in event['Records']:
+        # Extract relevant information from the event
+        event_name = record['eventName']
+        bucket_name = record['s3']['bucket']['name']
+        object_key = record['s3']['object']['key']
+        event_time = record['eventTime']
         
-        for record in event['Records']:
-            key = record['s3']['object']['key']
-            event_name = record['eventName']
-
-            # Check if the key has a file extension
-            if '.' in key.split('/')[-1]:
-                if key.startswith('classified/') and event_name in ['ObjectCreated:Put', 'ObjectRemoved:Delete', 'ObjectCreated:Copy']:
-                    key_parts = key.split('/')[1:]  # Remove the 'classified/' prefix
-
-                    if len(key_parts) == 4:
-                        customer, year_month, doctype, filename = key_parts
-                        s3_path = f"s3://{bucket_name}/{key}"
-
-                        if event_name == 'ObjectCreated:Put' or event_name == 'ObjectCreated:Copy':
-                            # Log the S3 event message
-                            logger.info(f"Received {event_name} event for {s3_path}")
-
-                            # Write item to DynamoDB table
-                            table.put_item(
-                                Item={
-                                    'customer': customer,
-                                    'year-month': year_month,
-                                    'filename': filename,
-                                    'doctype': doctype,
-                                    's3path': s3_path
-                                }
-                            )
-                            logger.info(f"Item written to DynamoDB table for {filename}")
-
-                        elif event_name == 'ObjectRemoved:Delete':
-                            # Delete item from DynamoDB table using the Global Secondary Index
-                            response = table.query(
-                                IndexName=GSI_NAME,
-                                KeyConditionExpression='customer = :customer AND filename = :filename',
-                                ExpressionAttributeValues={
-                                    ':customer': customer,
-                                    ':filename': filename
-                                }
-                            )
-                            
-                            for item in response.get('Items', []):
-                                table.delete_item(
-                                    Key={
-                                        'customer': item['customer'],
-                                        'year-month': item['year-month']
-                                    }
-                                )
-                            logger.info(f"Item deleted from DynamoDB table for customer {customer} and filename {filename}")
-                    else:
-                        logger.info(f"Skipping key {key} as it does not match the expected pattern")
-                else:
-                    logger.info(f"Skipping key {key} as it does not start with 'classified/' or the event is not ObjectCreated:Put, ObjectRemoved:Delete, or ObjectCreated:Copy")
-            else:
-                logger.info(f"Skipping key {key} as it does not have a file extension")
-
-        return {
-            'statusCode': 200,
-            'body': 'Files processed successfully'
-        }
-
-    except ClientError as e:
-        logger.error(f"AWS ClientError: {e}")
-        return {
-            'statusCode': 500,
-            'body': 'Error processing files: AWS ClientError'
-        }
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        return {
-            'statusCode': 500,
-            'body': 'Error processing files: Unexpected error'
-        }
+        logger.info(f"Processing event: {event_name} for object: {object_key}")
+        
+        # Extract filename and other details from the key
+        key_parts = object_key.split('/')
+        if len(key_parts) == 5 and key_parts[0] == 'classified':
+            customer = key_parts[1]
+            year_month = key_parts[2]
+            doctype = key_parts[3]
+            filename = key_parts[4]
+        else:
+            logger.warning(f"Skipping key {object_key} as it does not match the expected pattern")
+            continue
+        
+        if event_name.startswith('ObjectCreated:'):
+            # Create item to be inserted into DynamoDB
+            item = {
+                'customer': customer,
+                'object_key': object_key,
+                'year_month': year_month,
+                'bucket': bucket_name,
+                'doctype': doctype,
+                'filename': filename,
+                'event_time': event_time
+            }
+            
+            # Write item to DynamoDB table
+            try:
+                table.put_item(Item=item)
+                logger.info(f"Successfully wrote item for {object_key} to DynamoDB")
+            except Exception as e:
+                logger.error(f"Error writing to DynamoDB: {str(e)}", exc_info=True)
+        
+        elif event_name.startswith('ObjectRemoved:'):
+            # Delete the item from DynamoDB table
+            try:
+                table.delete_item(
+                    Key={
+                        'customer': customer,
+                        'object_key': object_key
+                    }
+                )
+                logger.info(f"Successfully deleted item for {object_key} from DynamoDB")
+            except Exception as e:
+                logger.error(f"Error deleting from DynamoDB: {str(e)}", exc_info=True)
+        
+        else:
+            logger.warning(f"Unhandled event type: {event_name}")
+    
+    logger.info("Processing complete")
+    return {
+        'statusCode': 200,
+        'body': 'Processing complete'
+    }
