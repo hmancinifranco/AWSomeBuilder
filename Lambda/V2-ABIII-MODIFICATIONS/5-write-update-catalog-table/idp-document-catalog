@@ -1,0 +1,80 @@
+import boto3
+import os
+import logging
+
+# Set up logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Initialize AWS clients
+dynamodb = boto3.resource('dynamodb')
+
+# Get environment variables
+TABLE_NAME = os.environ['DYNAMODB_TABLE_NAME']
+
+def lambda_handler(event, context):
+    logger.info(f"Received event: {event}")
+    
+    # Get the DynamoDB table
+    table = dynamodb.Table(TABLE_NAME)
+    
+    for record in event['Records']:
+        # Extract relevant information from the event
+        event_name = record['eventName']
+        bucket_name = record['s3']['bucket']['name']
+        object_key = record['s3']['object']['key']
+        event_time = record['eventTime']
+        
+        logger.info(f"Processing event: {event_name} for object: {object_key}")
+        
+        # Extract filename and other details from the key
+        key_parts = object_key.split('/')
+        if len(key_parts) == 5 and key_parts[0] == 'classified':
+            customer = key_parts[1]
+            year_month = key_parts[2]
+            doctype = key_parts[3]
+            filename = key_parts[4]
+        else:
+            logger.warning(f"Skipping key {object_key} as it does not match the expected pattern")
+            continue
+        
+        if event_name.startswith('ObjectCreated:'):
+            # Create item to be inserted into DynamoDB
+            item = {
+                'customer': customer,
+                'object_key': object_key,
+                'year_month': year_month,
+                'bucket': bucket_name,
+                'doctype': doctype,
+                'filename': filename,
+                'event_time': event_time
+            }
+            
+            # Write item to DynamoDB table
+            try:
+                table.put_item(Item=item)
+                logger.info(f"Successfully wrote item for {object_key} to DynamoDB")
+            except Exception as e:
+                logger.error(f"Error writing to DynamoDB: {str(e)}", exc_info=True)
+        
+        elif event_name.startswith('ObjectRemoved:'):
+            # Delete the item from DynamoDB table
+            try:
+                table.delete_item(
+                    Key={
+                        'customer': customer,
+                        'object_key': object_key
+                    }
+                )
+                logger.info(f"Successfully deleted item for {object_key} from DynamoDB")
+            except Exception as e:
+                logger.error(f"Error deleting from DynamoDB: {str(e)}", exc_info=True)
+        
+        else:
+            logger.warning(f"Unhandled event type: {event_name}")
+    
+    logger.info("Processing complete")
+    return {
+        'statusCode': 200,
+        'body': 'Processing complete'
+    }
