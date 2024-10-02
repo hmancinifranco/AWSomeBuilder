@@ -1,0 +1,341 @@
+<!DOCTYPE HTML>
+<!--
+	Asymmetry by gettemplates.co
+	Twitter: http://twitter.com/gettemplateco
+	URL: http://gettemplates.co
+-->
+<html>
+	<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>IDP Tool &mdash; AnyCompany</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="styles.css">
+	<!-- <link href="https://fonts.googleapis.com/css?family=Droid+Sans" rel="stylesheet"> -->
+	
+	<!-- Animate.css -->
+	<link rel="stylesheet" href="css/animate.css">
+	<!-- Icomoon Icon Fonts-->
+	<link rel="stylesheet" href="css/icomoon.css">
+	<!-- Themify Icons-->
+	<link rel="stylesheet" href="css/themify-icons.css">
+	<!-- Bootstrap  -->
+	<link rel="stylesheet" href="css/bootstrap.css">
+	<!-- Magnific Popup -->
+	<link rel="stylesheet" href="css/magnific-popup.css">
+	<!-- Owl Carousel  -->
+	<link rel="stylesheet" href="css/owl.carousel.min.css">
+	<link rel="stylesheet" href="css/owl.theme.default.min.css">
+	<!-- Flexslider -->
+	<link rel="stylesheet" href="css/flexslider.css">
+	<!-- Theme style  -->
+	<link rel="stylesheet" href="css/style.css">
+
+	<!-- Modernizr JS -->
+	<script src="js/modernizr-2.6.2.min.js"></script>
+	<!-- FOR IE9 below -->
+	<!--[if lt IE 9]>
+	<script src="js/respond.min.js"></script>
+	<![endif]-->
+
+	</head>
+
+	<body>
+		
+	<div class="gtco-loader"></div>
+	
+	<div id="page">
+	<nav class="gtco-nav" role="navigation">
+		<div class="gtco-container">
+			<div class="row">
+				<div class="col-sm-2 col-xs-12">
+					<div id="gtco-logo"><a href="index.html">AnyCompany <em>.</em></a></div>
+				</div>
+				<div class="col-xs-10 text-right menu-1 main-nav">
+					<ul>
+						<li class="active"><a href="#" data-nav-section="home">Home</a></li>
+						<li><a href="#" data-nav-section="classify">Importa y clasifica</a></li>
+						<li><a href="#" data-nav-section="results">Resultados (Demo)</a></li>
+						<li><a href="#" data-nav-section="catalog">Catálogo de documentos</a></li>
+						<li><a href="#" data-nav-section="faq">FAQs</a></li>
+					</ul>
+				</div>
+			</div>
+			
+		</div>
+	</nav>
+
+	<div id="gtco-hero" class="js-fullheight" data-section="home">
+		<div class="flexslider js-fullheight">
+			<ul class="slides">
+				<li style="background-image: url(images/img_bg_1.jpg);">
+					<div class="overlay"></div>
+					<div class="container">
+						<div class="col-md-10 col-md-offset-1 text-center js-fullheight slider-text">
+							<div class="slider-text-inner">
+								<h2>Clasifica automaticamente tus lotes de documentos contables.</h2>
+								<p>
+									<p><a href="#" data-nav-section="classify" class="btn btn-primary btn-lg">Cargar</a></p>
+								</p>
+							</div>
+						</div>
+					</div>
+				</li>
+		   	<li style="background-image: url(images/img_bg_2.jpg);">
+		   		<div class="overlay"></div>
+		   		<div class="container">
+		   			<div class="col-md-10 col-md-offset-1 text-center js-fullheight slider-text">
+		   				<div class="slider-text-inner">
+		   					<h2>Consulta el catalogo de documentos procesados.</h2>
+							   <p><a href="#" data-nav-section="catalog" class="btn btn-primary btn-lg">Catalogo</a></p>
+							</div>
+		   			</div>
+		   		</div>
+		   	</li>
+		   	<li style="background-image: url(images/img_bg_3.jpg);">
+		   		<div class="overlay"></div>
+		   		<div class="container">
+		   			<div class="col-md-10 col-md-offset-1 text-center js-fullheight slider-text">
+		   				<div class="slider-text-inner">
+		   					<h2>Preguntas frecuentes sobre la solucion de Intelligent Document Processing.</h2>
+							   <p><a href="#" data-nav-section="faq" class="btn btn-primary btn-lg">FAQs</a></p>
+							</div>
+		   			</div>
+		   		</div>
+		   	</li>
+		  	</ul>
+	  	</div>
+	</div>
+
+	<div class="gtco-section-overflow">
+
+		<div class="gtco-section" id="gtco-classify" data-section="classify">
+			<div class="gtco-container">
+				<div class="row">
+					<div class="col-md-8 col-md-offset-2 text-align gtco-heading">
+						<h2>Clasifica lotes de documentos contables</h2>
+						<p>En esta sección puedes subir documentos para ser clasificados automáticamente usando Machine Learning. Actualmente procesa las clases; recibos, facturas y balances financieros.</p>
+						<p> Las extensiones de archivo aceptadas son PDF, PNG, JPEG o TIFF. Ten en cuenta que este es un proceso asincrónico. Una vez que hayas subido tus documentos, podrás ir a la sección de Resultados y hacer clic en el botón "Ver resultado" y ver que clasificaciones obtuvó el ultimo lote cargado.</p>
+						<p>Recuerda completar los campos mandatorios: Titular (Cliente) and Año-Mes.</p>
+					</div>
+					<div class="col-md-8 col-md-offset-2 text-align gtco-heading">
+						<form>
+							<div style="display: flex; flex-direction: column;">
+								<h4>Titular</h4>
+								<input type="text" id="customer" placeholder="Enter customer name" required>
+								<br>
+								<h4>Año-Mes</h4>
+								<input type="text" id="year-month" placeholder="Enter year-month (YYYY-MM)" pattern="\d{4}-\d{2}" maxlength="7" required>
+								<br>
+								<h4>Documentos a importar:</h4>
+								<input id="file-input" type="file" accept=".pdf,.jpeg,.png,.tiff" multiple required>
+						
+								<h6>Las extensiones de archivos soportadas son: pdf, jpeg, png y tiff.</h6>
+								<h6>Los campos de texto restringen los formatos y caracteres soportados.</h6>
+								<br>
+								<h4>Upload Status</h4>
+								<div id="upload-status"></div>
+								<br>
+								<div class="button-container">
+									<button type="button" id="upload-button">Cargar lote y procesarlo</button>
+								</div>								
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="gtco-section" id="gtco-results" data-section="results">
+			<div class="gtco-container">
+				<div class="row">
+					<div class="col-md-8 col-md-offset-2 text-align gtco-heading">
+						<h2>Resultados de clasificacion (Demo)</h2>
+						<p>Dignissimos asperiores vitae velit veniam totam fuga molestias accusamus alias autem provident. Odit ab aliquam dolor eius.</p>
+					</div>
+
+					<div class="col-md-8 col-md-offset-2 text-align gtco-heading">
+					<!--	<h2>Asynchronous Results</h2>
+						<p>Dignissimos asperiores vitae velit veniam totam fuga molestias accusamus alias autem provident. Odit ab aliquam dolor eius.</p>
+					-->
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="gtco-section" id="gtco-catalog" data-section="catalog">
+			<div class="gtco-container">
+				<div class="row">
+					<div class="col-md-8 col-md-offset-2 text-align gtco-heading">
+						<h2>Consulta el catálogo de documentos</h2>
+						<p>En esta sección puedes consultar la base de datos de documentos clasificados.</p>
+						<p>Para la Demo, incluimos la posibilidad de realizar un scan a la tabla, para producción no aconsejamos este metodo por motivos de optimización de costos.</p>
+					</div>
+					<div class="col-md-8 col-md-offset-2 text-align gtco-heading">
+						<form id="queryForm">
+							<div style="display: flex; flex-direction: column;">
+								<h4>Titular</h4>
+								<input type="text" id="customer-query" placeholder="Enter customer name" required>
+								<br>
+								<h4>Año-Mes</h4>
+								<input type="text" id="year-month-query" placeholder="Enter year-month (YYYY-MM)" pattern="\d{4}-\d{2}" maxlength="7">
+								<br>
+								<div class="button-container">
+								  <button type="submit">Consultar</button>
+								</div>
+							  </div>
+							</form>
+							
+							<div>
+							  <table id="resultsTable">
+							<!--<thead>
+								  <tr>
+									<th>Customer</th>
+									<th>Year-Month</th>
+								  </tr>
+								</thead>
+							-->
+								<tbody></tbody>
+							  </table>
+							</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="gtco-section" id="gtco-faq" data-section="faq">
+			<div class="gtco-container">
+				<div class="row">
+					<div class="col-md-8 col-md-offset-2 text-center gtco-heading">
+						<h2>Preguntas Frecuentes</h2>
+						<p>Dignissimos asperiores vitae velit veniam totam fuga molestias accusamus alias autem provident. Odit ab aliquam dolor eius.</p>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-6">
+
+						<div class="gtco-accordion">
+							<div class="gtco-accordion-heading">
+								<div class="icon"><i class="icon-cross"></i></div>
+								<h3>What is Asymmetry?</h3>
+							</div>
+							<div class="gtco-accordion-content">
+								<div class="inner">
+									<p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+								</div>
+							</div>
+						</div>
+						<div class="gtco-accordion">
+							<div class="gtco-accordion-heading">
+								<div class="icon"><i class="icon-cross"></i></div>
+								<h3>I have technical problem, who do I email?</h3>
+							</div>
+							<div class="gtco-accordion-content">
+								<div class="inner">
+									<p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+								</div>
+							</div>
+						</div>
+						<div class="gtco-accordion">
+							<div class="gtco-accordion-heading">
+								<div class="icon"><i class="icon-cross"></i></div>
+								<h3>How do I use Asymmetry features?</h3>
+							</div>
+							<div class="gtco-accordion-content">
+								<div class="inner">
+									<p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+								</div>
+							</div>
+						</div>
+
+					</div>
+					<div class="col-md-6">
+
+						<div class="gtco-accordion">
+							<div class="gtco-accordion-heading">
+								<div class="icon"><i class="icon-cross"></i></div>
+								<h3>What language are available?</h3>
+							</div>
+							<div class="gtco-accordion-content">
+								<div class="inner">
+									<p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+								</div>
+							</div>
+						</div>
+						<div class="gtco-accordion">
+							<div class="gtco-accordion-heading">
+								<div class="icon"><i class="icon-cross"></i></div>
+								<h3>Can I have a username that is already taken?</h3>
+							</div>
+							<div class="gtco-accordion-content">
+								<div class="inner">
+									<p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+								</div>
+							</div>
+						</div>
+						<div class="gtco-accordion">
+							<div class="gtco-accordion-heading">
+								<div class="icon"><i class="icon-cross"></i></div>
+								<h3>Is Asymmetry free?</h3>
+							</div>
+							<div class="gtco-accordion-content">
+								<div class="inner">
+									<p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+								</div>
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+		
+	
+	<footer id="gtco-footer" role="contentinfo">
+		<div class="gtco-container">
+			
+			<div class="row copyright">
+				<div class="col-md-12">
+					<p class="pull-left">
+						<small class="block">Powered by: AWS</small> 
+						<small class="block">Designed by <a href="https://phonetool.amazon.com/users/hmancini" target="_blank">@hmancini</a></small>
+					</p>
+				</div>
+			</div>
+
+		</div>
+	</footer>
+	</div>
+
+	<div class="gototop js-top">
+		<a href="#" class="js-gotop"><i class="icon-arrow-up"></i></a>
+	</div>
+	
+	<!-- jQuery -->
+	<script src="js/jquery.min.js"></script>
+	<!-- jQuery Easing -->
+	<script src="js/jquery.easing.1.3.js"></script>
+	<!-- Bootstrap -->
+	<script src="js/bootstrap.min.js"></script>
+	<!-- Waypoints -->
+	<script src="js/jquery.waypoints.min.js"></script>
+	<!-- Carousel -->
+	<script src="js/owl.carousel.min.js"></script>
+	<!-- countTo -->
+	<script src="js/jquery.countTo.js"></script>
+	<!-- Flexslider -->
+	<script src="js/jquery.flexslider-min.js"></script>
+	<!-- Magnific Popup -->
+	<script src="js/jquery.magnific-popup.min.js"></script>
+	<script src="js/magnific-popup-options.js"></script>
+	<!-- Main -->
+	<script src="js/main.js"></script>
+	<!--AWS SDK-->
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1313.0.min.js"></script>
+	<!--Upload file form-->
+	<script src="js/uploadfiles-presigned.js"></script>
+	</body>
+</html>

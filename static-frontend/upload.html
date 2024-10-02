@@ -73,6 +73,27 @@
             max-height: 200px;
             overflow-y: auto;
         }
+        #sns-messages, #dynamo-results {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .additional-sections {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .additional-section {
+            width: 48%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .additional-section h2 {
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
@@ -109,7 +130,129 @@
         </div>
     </form>
 
+    <div class="additional-sections">
+        <div class="additional-section">
+            <h2>Mensajes de SNS</h2>
+            <div id="sns-messages"></div>
+            <button id="subscribe-sns" disabled>Suscribirse a SNS</button>
+        </div>
+        <div class="additional-section">
+            <h2>Consultar DynamoDB</h2>
+            <div>
+                <label for="customer-query">Customer:</label>
+                <input type="text" id="customer-query" placeholder="Ingresa el customer">
+            </div>
+            <div>
+                <label for="year-month-query">Year-Month:</label>
+                <input type="text" id="year-month-query" placeholder="Ingresa el year-month (YYYY-MM)">
+            </div>
+            <button id="query-dynamo">Consultar</button>
+            <br>
+            <br>
+            <button id="scan-dynamo">Escanear Tabla</button>
+            <div id="dynamo-results"></div>
+        </div>
+    </div>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1313.0.min.js"></script>
     <script>
+        // Configurar AWS SDK
+        AWS.config.region = 'tu-region'; // Reemplaza con tu región
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: 'tu-identity-pool-id' // Reemplaza con tu ID de pool de identidades
+        });
+
+        // Inicializar clientes de AWS
+        const sns = new AWS.SNS();
+        const dynamodb = new AWS.DynamoDB();
+
+        // Función para suscribirse al tema de SNS
+        const subscribeToSNS = async () => {
+            // Lógica para suscribirse al tema de SNS
+        };
+
+        // Función para recibir mensajes de SNS
+        const startReceivingMessages = () => {
+            // Lógica para recibir mensajes de SNS
+        };
+
+        // Función para consultar DynamoDB
+        const queryDynamoDB = async () => {
+            const customerQuery = document.getElementById('customer-query').value;
+            const yearMonthQuery = document.getElementById('year-month-query').value;
+            const resultsDiv = document.getElementById('dynamo-results');
+
+            const params = {
+                TableName: 'tu-tabla-dynamodb', // Reemplaza con el nombre de tu tabla de DynamoDB
+                FilterExpression: '#customer = :customer AND #yearMonth = :yearMonth',
+                ExpressionAttributeNames: {
+                    '#customer': 'customer',
+                    '#yearMonth': 'year_month'
+                },
+                ExpressionAttributeValues: {
+                    ':customer': customerQuery,
+                    ':yearMonth': yearMonthQuery
+                }
+            };
+
+            if (!customerQuery && !yearMonthQuery) {
+                // Realizar un escaneo completo de la tabla
+                params.FilterExpression = undefined;
+                params.ExpressionAttributeNames = undefined;
+                params.ExpressionAttributeValues = undefined;
+            } else if (!customerQuery) {
+                // Consultar solo por Year-Month
+                params.FilterExpression = '#yearMonth = :yearMonth';
+                delete params.ExpressionAttributeNames['#customer'];
+                delete params.ExpressionAttributeValues[':customer'];
+            } else if (!yearMonthQuery) {
+                // Consultar solo por Customer
+                params.FilterExpression = '#customer = :customer';
+                delete params.ExpressionAttributeNames['#yearMonth'];
+                delete params.ExpressionAttributeValues[':yearMonth'];
+            }
+
+            try {
+                const data = await dynamodb.scan(params).promise();
+                resultsDiv.innerHTML = '';
+                data.Items.forEach(item => {
+                    const itemDiv = document.createElement('pre');
+                    itemDiv.textContent = JSON.stringify(item, null, 2);
+                    resultsDiv.appendChild(itemDiv);
+                });
+            } catch (err) {
+                console.error('Error al consultar DynamoDB:', err);
+            }
+        };
+
+        // Función para realizar un escaneo completo de la tabla de DynamoDB
+        const scanDynamoDB = async () => {
+            const resultsDiv = document.getElementById('dynamo-results');
+
+            const params = {
+                TableName: 'tu-tabla-dynamodb' // Reemplaza con el nombre de tu tabla de DynamoDB
+            };
+
+            try {
+                const data = await dynamodb.scan(params).promise();
+                resultsDiv.innerHTML = '';
+                data.Items.forEach(item => {
+                    const itemDiv = document.createElement('pre');
+                    itemDiv.textContent = JSON.stringify(item, null, 2);
+                    resultsDiv.appendChild(itemDiv);
+                });
+            } catch (err) {
+                console.error('Error al escanear DynamoDB:', err);
+            }
+        };
+
+        // Eventos
+        document.getElementById('subscribe-sns').addEventListener('click', subscribeToSNS);
+        document.getElementById('query-dynamo').addEventListener('click', queryDynamoDB);
+        document.getElementById('scan-dynamo').addEventListener('click', scanDynamoDB);
+
+
+        // Código existente para subir archivos a S3
         async function getPresignedUrl(objectName, customer, yearMonth) {
             const dateTime = new Date().toISOString().replace(/:/g, '-');
             const params = new URLSearchParams({
